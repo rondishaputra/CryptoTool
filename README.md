@@ -72,7 +72,7 @@ CryptoTool adalah toolkit kriptografi berbasis baris perintah (*command-line*) y
 Clone repository ini ke komputer Anda:
 
 ```powershell
-git clone [https://github.com/USERNAME/CryptoTool.git](https://github.com/USERNAME/CryptoTool.git)
+git clone [https://github.com/rondishaputra/CryptoTool.git](https://github.com/rondishaputra/CryptoTool.git)
 cd CryptoTool
 
 Clone the repository:
@@ -81,5 +81,5 @@ Clone the repository:
 
 ```powershell
 
-git clone https://github.com/USERNAME/CryptoTool.git
+git clone https://github.com/rondishaputra/CryptoTool.git
 
