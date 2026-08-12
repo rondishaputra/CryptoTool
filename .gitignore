@@ -1,0 +1,12 @@
+# RSA keys
+keys/*.xml
+
+# PowerShell temporary files
+*.tmp
+
+# Backup files
+*.bak
+
+# Windows
+Thumbs.db
+Desktop.ini
