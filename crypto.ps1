@@ -1117,27 +1117,32 @@ function RSA-Tool {
 
 while ($true) {
 
-    Clear-Host
-    Write-Host "========================================"
-    Write-Host @'
+Clear-Host
+Write-Host "========================================"
+Write-Host @'
  ____  _   _ _____ ____      _    
 |  _ \| | | |_   _|  _ \    / \   
 | |_) | | | | | | | |_) |  / _ \  
 |  __/| |_| | | | |  _ <  / ___ \ 
 |_|    \___/  |_| |_| \_\/_/   \_\
-CRYPTOGRAPHY TOOL
-'@
-    Write-Host "MAHASISWA BUKAN MAHA TAHU"
-    Write-Host "========================================"
-    Write-Host ""
-    Write-Host "[1] Caesar Cipher"
-    Write-Host "[2] Vigenere Cipher"
-    Write-Host "[3] XOR Cipher"
-    Write-Host "[4] AES"
-    Write-Host "[5] RSA"
-    Write-Host "[6] Exit"
-    Write-Host ""
 
+          CRYPTOGRAPHY TOOL
+'@
+Write-Host "========================================"
+Write-Host "Version : 1.1.0"
+Write-Host "Release : Installation Improvement"
+Write-Host "Author  : PUTRA"
+Write-Host "========================================"
+Write-Host "MAHASISWA BUKAN MAHA TAHU"
+Write-Host "========================================"
+Write-Host ""
+Write-Host "[1] Caesar Cipher"
+Write-Host "[2] Vigenere Cipher"
+Write-Host "[3] XOR Cipher"
+Write-Host "[4] AES"
+Write-Host "[5] RSA"
+Write-Host "[6] Exit"
+Write-Host ""
     $choice =
         Read-Host "Select algorithm"
 

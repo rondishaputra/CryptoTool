@@ -1,85 +1,365 @@
-\# CryptoTool
-A command-line cryptography toolkit written in PowerShell.
+# 🔐 CryptoTool
 
+```text
+========================================
+                 PUTRA
+          CRYPTOGRAPHY TOOL
+========================================
+        MAHASISWA BUKAN MAHA TAHU
+========================================
+```
 
+**CryptoTool** adalah command-line cryptography tool berbasis **PowerShell** yang menyediakan beberapa algoritma kriptografi untuk pembelajaran dan eksperimen.
 
-\## Features
+---
 
+## ✨ Features
 
+CryptoTool saat ini menyediakan:
 
-\- Caesar Cipher
+- Caesar Cipher
+- Vigenere Cipher
+- XOR Cipher
+- AES
+- RSA
 
-\- Vigenere Cipher
+---
 
-\- XOR Cipher
+## 💻 Requirements
 
-\- AES-128
+- Windows
+- PowerShell
+- Git
 
-\- AES-192
+PowerShell sudah tersedia pada Windows modern.
 
-\- AES-256
+Git digunakan untuk mengambil CryptoTool dari repository GitHub.
 
-\- RSA-2048
+---
 
-\- RSA-3072
+# 📥 Installation
 
-\- RSA-4096
+## 1. Install Git
 
+Jika Git belum terpasang, download Git for Windows:
 
+https://git-scm.com/download/win
 
-\## Requirements
+Setelah selesai, buka **CMD** atau **PowerShell** dan cek:
 
+```cmd
+git --version
+```
 
+Jika versi Git muncul, lanjut ke langkah berikutnya.
 
-\- Windows
+---
 
-\- PowerShell
+## 2. Clone CryptoTool
 
-\- .NET
+Buka CMD atau PowerShell.
 
+Kemudian clone repository:
 
+```cmd
+git clone https://github.com/rondishaputra/CryptoTool.git
+```
 
-\## Usage
+Masuk ke folder CryptoTool:
 
-# CryptoTool
-
-CryptoTool adalah toolkit kriptografi berbasis baris perintah (*command-line*) yang ditulis menggunakan PowerShell. Alat ini menyediakan berbagai algoritma enkripsi dan dekripsi untuk tujuan pembelajaran dan eksplorasi keamanan data.
-
-## Features
-
-*   **Caesar Cipher**
-*   **Vigenere Cipher**
-*   **XOR Cipher**
-*   **AES (Symmetric):** Mendukung AES-128, AES-192, dan AES-256.
-*   **RSA (Asymmetric):** Mendukung RSA-2048, RSA-3072, dan RSA-4096.
-
-## Supported Algorithms
-
-*   **Caesar Cipher:** Algoritma substitusi klasik yang menggunakan nilai pergeseran (*shift value*).
-*   **Vigenere Cipher:** Algoritma substitusi *polyalphabetic* yang menggunakan kata kunci (*keyword*).
-*   **XOR Cipher:** Enkripsi *byte-wise* XOR menggunakan kunci yang berulang (*repeating key*).
-*   **AES:** Standar enkripsi simetris (Advanced Encryption Standard) dengan panjang kunci 128, 192, dan 256-bit.
-*   **RSA:** Standar enkripsi asimetris dengan panjang kunci 2048, 3072, dan 4096-bit.
-
-## Requirements
-
-*   **OS:** Windows
-*   **Shell:** PowerShell 5.1 atau lebih baru
-*   **Framework:** .NET Framework / .NET Core (terintegrasi dengan Windows)
-
-## Installation
-
-Clone repository ini ke komputer Anda:
-
-```powershell
-git clone [https://github.com/USERNAME/CryptoTool.git](https://github.com/USERNAME/CryptoTool.git)
+```cmd
 cd CryptoTool
+```
 
-Clone the repository:
+---
 
+## 3. Install CryptoTool
 
+Jalankan:
 
-```powershell
+```cmd
+install.cmd
+```
 
-git clone https://github.com/USERNAME/CryptoTool.git
+Installer akan otomatis:
 
+- Mendeteksi lokasi CryptoTool
+- Menambahkan CryptoTool ke **User PATH**
+- Membuat CryptoTool dapat dipanggil dari terminal
+- Tidak memerlukan konfigurasi PATH secara manual
+
+Jika muncul:
+
+```text
+========================================
+       INSTALLATION COMPLETE
+========================================
+
+Please open a NEW CMD or PowerShell window.
+
+Then simply type:
+
+    CryptoTool
+```
+
+tutup terminal yang sedang digunakan.
+
+Kemudian buka **CMD atau PowerShell baru**.
+
+---
+
+# ▶️ Running CryptoTool
+
+Setelah instalasi selesai, Anda tidak perlu melakukan:
+
+```cmd
+cd C:\Tools\CryptoTool
+```
+
+lagi.
+
+Cukup ketik:
+
+```cmd
+CryptoTool
+```
+
+CryptoTool dapat dijalankan dari folder mana pun.
+
+Contoh:
+
+```text
+C:\Users\Admin> CryptoTool
+```
+
+atau:
+
+```text
+C:\Users\Admin\Desktop> CryptoTool
+```
+
+atau:
+
+```text
+C:\> CryptoTool
+```
+
+---
+
+# 🖥️ Main Menu
+
+Setelah CryptoTool dijalankan:
+
+```text
+========================================
+                 PUTRA
+          CRYPTOGRAPHY TOOL
+========================================
+        MAHASISWA BUKAN MAHA TAHU
+========================================
+
+[1] Caesar Cipher
+[2] Vigenere Cipher
+[3] XOR Cipher
+[4] AES
+[5] RSA
+[6] Exit
+```
+
+Pilih algoritma menggunakan nomor yang tersedia.
+
+---
+
+# 🔐 Supported Algorithms
+
+## 1. Caesar Cipher
+
+Caesar Cipher merupakan substitution cipher yang melakukan pergeseran karakter berdasarkan nilai key.
+
+Contoh:
+
+```text
+Plaintext : HELLO
+Key       : 3
+Result    : KHOOR
+```
+
+---
+
+## 2. Vigenere Cipher
+
+Vigenere Cipher merupakan polyalphabetic substitution cipher yang menggunakan keyword sebagai dasar pergeseran karakter.
+
+Contoh:
+
+```text
+Plaintext : HELLO
+Key       : KEY
+```
+
+Proses enkripsi menggunakan karakter dari key secara berulang.
+
+---
+
+## 3. XOR Cipher
+
+XOR Cipher menggunakan operasi bitwise XOR antara plaintext dan key.
+
+Konsep dasar:
+
+```text
+Ciphertext = Plaintext XOR Key
+```
+
+Operasi XOR yang sama dapat digunakan untuk mengembalikan ciphertext menjadi plaintext selama key yang digunakan sama.
+
+---
+
+## 4. AES
+
+AES atau **Advanced Encryption Standard** merupakan symmetric encryption algorithm.
+
+CryptoTool menyediakan:
+
+```text
+[1] Encrypt
+[2] Decrypt
+[3] Back
+```
+
+AES menggunakan key yang sama untuk proses enkripsi dan dekripsi.
+
+---
+
+## 5. RSA
+
+RSA merupakan asymmetric cryptography yang menggunakan pasangan:
+
+```text
+Public Key
+Private Key
+```
+
+Secara umum:
+
+```text
+Public Key  → Encryption
+Private Key → Decryption
+```
+
+RSA menggunakan pasangan kunci yang berbeda untuk proses enkripsi dan dekripsi.
+
+---
+
+# 📂 Project Structure
+
+```text
+CryptoTool/
+│
+├── crypto.ps1
+│
+├── install.cmd
+│
+├── README.md
+│
+└── .gitignore
+```
+
+### `crypto.ps1`
+
+Program utama CryptoTool.
+
+### `install.cmd`
+
+Installer CryptoTool.
+
+Installer menambahkan lokasi CryptoTool ke **User PATH**, sehingga command:
+
+```text
+CryptoTool
+```
+
+dapat digunakan dari folder mana pun.
+
+### `README.md`
+
+Dokumentasi project.
+
+### `.gitignore`
+
+Menentukan file atau folder yang tidak perlu dimasukkan ke repository Git.
+
+---
+
+# 🔄 Updating CryptoTool
+
+Jika terdapat pembaruan pada repository GitHub, masuk ke folder CryptoTool:
+
+```cmd
+cd C:\Tools\CryptoTool
+```
+
+Kemudian:
+
+```cmd
+git pull
+```
+
+Setelah selesai, jalankan:
+
+```cmd
+CryptoTool
+```
+
+Tidak perlu menjalankan `install.cmd` lagi selama lokasi instalasi CryptoTool tidak berubah.
+
+---
+
+# 🗑️ Uninstallation
+
+Untuk menghapus CryptoTool:
+
+1. Hapus folder:
+
+```text
+C:\Tools\CryptoTool
+```
+
+2. Hapus lokasi CryptoTool dari **User PATH** Windows.
+
+Setelah itu command:
+
+```text
+CryptoTool
+```
+
+tidak lagi tersedia.
+
+---
+
+# ⚠️ Disclaimer
+
+CryptoTool dibuat untuk:
+
+- Pembelajaran kriptografi
+- Eksperimen algoritma
+- Memahami konsep encryption dan decryption
+- Pengembangan command-line tools
+
+CryptoTool **bukan pengganti library cryptography yang telah diaudit secara keamanan**.
+
+Jangan gunakan implementasi ini untuk melindungi data sensitif atau sistem produksi tanpa memahami keamanan, implementasi, dan konfigurasi algoritma yang digunakan.
+
+---
+
+# 👨‍💻 Author
+
+**PUTRA**
+
+CryptoTool dibuat sebagai project pembelajaran dan pengembangan command-line cryptography tool berbasis PowerShell.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
