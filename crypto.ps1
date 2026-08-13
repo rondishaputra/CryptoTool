@@ -1,8 +1,78 @@
-Clear-Host
+# ============================================================
+# CRYPTOGRAPHY TOOL - v2.0.0
+# Author  : PUTRA
+# Rewrite : Fixed case-sensitivity bug (Caesar & Vigenere) + UI
+# ============================================================
 
-# ============================================================
-# CRYPTOGRAPHY TOOL
-# ============================================================
+$Host.UI.RawUI.WindowTitle = "Cryptography Tool v2.0.0"
+
+# ------------------------------------------------------------
+# UI HELPERS
+# ------------------------------------------------------------
+
+function Write-Box {
+    param(
+        [string]$Title,
+        [string]$Color = "Cyan",
+        [int]$Width = 44
+    )
+
+    $line = "=" * ($Width - 2)
+    Write-Host "+$line+" -ForegroundColor $Color
+    $pad = [Math]::Max(0, $Width - 2 - $Title.Length)
+    $left = [Math]::Floor($pad / 2)
+    $right = $pad - $left
+    Write-Host ("|" + (" " * $left) + $Title + (" " * $right) + "|") -ForegroundColor $Color
+    Write-Host "+$line+" -ForegroundColor $Color
+}
+
+function Write-Menu {
+    param(
+        [string[]]$Items,
+        [string]$Color = "White"
+    )
+    Write-Host ""
+    foreach ($item in $Items) {
+        Write-Host "  $item" -ForegroundColor $Color
+    }
+    Write-Host ""
+}
+
+function Read-Choice {
+    param([string]$Prompt = "Pilih menu")
+    Write-Host -NoNewline "  $Prompt > " -ForegroundColor Yellow
+    return Read-Host
+}
+
+function Write-Result {
+    param(
+        [string]$Label,
+        [string]$Value,
+        [string]$Color = "Green"
+    )
+    Write-Host ""
+    Write-Host "  +- $Label" -ForegroundColor $Color
+    Write-Host "  |  $Value" -ForegroundColor White
+    Write-Host "  +-------------------------------------" -ForegroundColor $Color
+}
+
+function Write-ErrorMsg {
+    param([string]$Message)
+    Write-Host ""
+    Write-Host "  [X] $Message" -ForegroundColor Red
+}
+
+function Write-Info {
+    param([string]$Message)
+    Write-Host ""
+    Write-Host "  [i] $Message" -ForegroundColor DarkYellow
+}
+
+function Pause-Continue {
+    Write-Host ""
+    Write-Host -NoNewline "  Tekan Enter untuk melanjutkan..." -ForegroundColor DarkGray
+    Read-Host | Out-Null
+}
 
 
 # ============================================================
@@ -14,40 +84,30 @@ function Caesar-Cipher {
     while ($true) {
 
         Clear-Host
+        Write-Box -Title "CAESAR CIPHER" -Color Cyan
+        Write-Menu -Items @("[1] Encrypt", "[2] Decrypt", "[3] Back")
 
-        Write-Host "========================================"
-        Write-Host "          CAESAR CIPHER"
-        Write-Host "========================================"
-        Write-Host ""
-        Write-Host "[1] Encrypt"
-        Write-Host "[2] Decrypt"
-        Write-Host "[3] Back"
-        Write-Host ""
+        $operation = Read-Choice "Select operation"
 
-        $operation = Read-Host "Select operation"
-
-        if ($operation -eq "3") {
-            return
-        }
+        if ($operation -eq "3") { return }
 
         if ($operation -ne "1" -and $operation -ne "2") {
-            Write-Host ""
-            Write-Host "Invalid selection."
-            Read-Host "Press Enter to continue"
+            Write-ErrorMsg "Invalid selection."
+            Pause-Continue
             continue
         }
 
         Write-Host ""
-
-        $text = Read-Host "Enter text"
-        $key = Read-Host "Enter key"
+        Write-Host -NoNewline "  Enter text : " -ForegroundColor Yellow
+        $text = Read-Host
+        Write-Host -NoNewline "  Enter key  : " -ForegroundColor Yellow
+        $key = Read-Host
 
         $shift = 0
 
         if (-not [int]::TryParse($key, [ref]$shift)) {
-            Write-Host ""
-            Write-Host "Key must be a number."
-            Read-Host "Press Enter to continue"
+            Write-ErrorMsg "Key must be a number."
+            Pause-Continue
             continue
         }
 
@@ -55,43 +115,35 @@ function Caesar-Cipher {
             $shift = -$shift
         }
 
-        $shift = $shift % 26
+        $shift = (($shift % 26) + 26) % 26
 
         $result = ""
 
         foreach ($char in $text.ToCharArray()) {
 
-            if ($char -match '[A-Z]') {
+            # FIX: -match is case-insensitive in PowerShell, which made
+            # lowercase letters always match '[A-Z]' first and lose their
+            # case. -cmatch forces a case-sensitive comparison so upper
+            # and lower case letters are handled by the correct branch.
+            if ($char -cmatch '[A-Z]') {
 
                 $code = [int][char]$char
-
-                $newCode =
-                    (($code - 65 + $shift) % 26 + 26) % 26 + 65
-
+                $newCode = (($code - 65 + $shift) % 26 + 26) % 26 + 65
                 $result += [char]$newCode
             }
-
-            elseif ($char -match '[a-z]') {
+            elseif ($char -cmatch '[a-z]') {
 
                 $code = [int][char]$char
-
-                $newCode =
-                    (($code - 97 + $shift) % 26 + 26) % 26 + 97
-
+                $newCode = (($code - 97 + $shift) % 26 + 26) % 26 + 97
                 $result += [char]$newCode
             }
-
             else {
-
                 $result += $char
             }
         }
 
-        Write-Host ""
-        Write-Host "Result : $result"
-        Write-Host ""
-
-        Read-Host "Press Enter to continue"
+        Write-Result -Label "Result" -Value $result
+        Pause-Continue
     }
 }
 
@@ -105,122 +157,79 @@ function Vigenere-Cipher {
     while ($true) {
 
         Clear-Host
+        Write-Box -Title "VIGENERE CIPHER" -Color Cyan
+        Write-Menu -Items @("[1] Encrypt", "[2] Decrypt", "[3] Back")
 
-        Write-Host "========================================"
-        Write-Host "          VIGENERE CIPHER"
-        Write-Host "========================================"
-        Write-Host ""
-        Write-Host "[1] Encrypt"
-        Write-Host "[2] Decrypt"
-        Write-Host "[3] Back"
-        Write-Host ""
+        $operation = Read-Choice "Select operation"
 
-        $operation = Read-Host "Select operation"
-
-        if ($operation -eq "3") {
-            return
-        }
+        if ($operation -eq "3") { return }
 
         if ($operation -ne "1" -and $operation -ne "2") {
-            Write-Host ""
-            Write-Host "Invalid selection."
-            Read-Host "Press Enter to continue"
+            Write-ErrorMsg "Invalid selection."
+            Pause-Continue
             continue
         }
 
         Write-Host ""
-
-        $text = Read-Host "Enter text"
-        $key = Read-Host "Enter key"
+        Write-Host -NoNewline "  Enter text : " -ForegroundColor Yellow
+        $text = Read-Host
+        Write-Host -NoNewline "  Enter key  : " -ForegroundColor Yellow
+        $key = Read-Host
 
         if ($key -notmatch '^[A-Za-z]+$') {
-
-            Write-Host ""
-            Write-Host "Key must contain letters only."
-            Read-Host "Press Enter to continue"
+            Write-ErrorMsg "Key must contain letters only."
+            Pause-Continue
             continue
         }
 
-        $keyChars = $key.ToCharArray()
-
-        for ($i = 0; $i -lt $keyChars.Length; $i++) {
-
-            $ascii = [int][char]$keyChars[$i]
-
-            if ($ascii -ge 97 -and $ascii -le 122) {
-
-                $keyChars[$i] = [char]($ascii - 32)
-            }
-        }
+        $keyChars = $key.ToUpperInvariant().ToCharArray()
 
         $result = ""
         $keyIndex = 0
 
         foreach ($char in $text.ToCharArray()) {
 
-            if ($char -match '[A-Z]') {
+            # FIX: -cmatch instead of -match so lowercase letters are
+            # no longer swallowed by the uppercase branch and vice versa.
+            if ($char -cmatch '[A-Z]') {
 
                 $plainValue = [int][char]$char - 65
-
-                $keyPosition =
-                    $keyIndex % $keyChars.Length
-
-                $keyValue =
-                    [int][char]$keyChars[$keyPosition] - 65
+                $keyPosition = $keyIndex % $keyChars.Length
+                $keyValue = [int][char]$keyChars[$keyPosition] - 65
 
                 if ($operation -eq "1") {
-
-                    $newValue =
-                        ($plainValue + $keyValue) % 26
+                    $newValue = ($plainValue + $keyValue) % 26
                 }
                 else {
-
-                    $newValue =
-                        ($plainValue - $keyValue + 26) % 26
+                    $newValue = ($plainValue - $keyValue + 26) % 26
                 }
 
                 $result += [char]($newValue + 65)
-
                 $keyIndex++
             }
-
-            elseif ($char -match '[a-z]') {
+            elseif ($char -cmatch '[a-z]') {
 
                 $plainValue = [int][char]$char - 97
-
-                $keyPosition =
-                    $keyIndex % $keyChars.Length
-
-                $keyValue =
-                    [int][char]$keyChars[$keyPosition] - 65
+                $keyPosition = $keyIndex % $keyChars.Length
+                $keyValue = [int][char]$keyChars[$keyPosition] - 65
 
                 if ($operation -eq "1") {
-
-                    $newValue =
-                        ($plainValue + $keyValue) % 26
+                    $newValue = ($plainValue + $keyValue) % 26
                 }
                 else {
-
-                    $newValue =
-                        ($plainValue - $keyValue + 26) % 26
+                    $newValue = ($plainValue - $keyValue + 26) % 26
                 }
 
                 $result += [char]($newValue + 97)
-
                 $keyIndex++
             }
-
             else {
-
                 $result += $char
             }
         }
 
-        Write-Host ""
-        Write-Host "Result : $result"
-        Write-Host ""
-
-        Read-Host "Press Enter to continue"
+        Write-Result -Label "Result" -Value $result
+        Pause-Continue
     }
 }
 
@@ -234,124 +243,87 @@ function XOR-Cipher {
     while ($true) {
 
         Clear-Host
+        Write-Box -Title "XOR CIPHER" -Color Cyan
+        Write-Menu -Items @("[1] Encrypt", "[2] Decrypt", "[3] Back")
 
-        Write-Host "========================================"
-        Write-Host "             XOR CIPHER"
-        Write-Host "========================================"
-        Write-Host ""
-        Write-Host "[1] Encrypt"
-        Write-Host "[2] Decrypt"
-        Write-Host "[3] Back"
-        Write-Host ""
+        $operation = Read-Choice "Select operation"
 
-        $operation = Read-Host "Select operation"
-
-        if ($operation -eq "3") {
-            return
-        }
+        if ($operation -eq "3") { return }
 
         if ($operation -ne "1" -and $operation -ne "2") {
-            Write-Host ""
-            Write-Host "Invalid selection."
-            Read-Host "Press Enter to continue"
+            Write-ErrorMsg "Invalid selection."
+            Pause-Continue
             continue
         }
 
-        Write-Host ""
-
         if ($operation -eq "1") {
 
-            $text = Read-Host "Enter text"
-            $key = Read-Host "Enter key"
+            Write-Host ""
+            Write-Host -NoNewline "  Enter text : " -ForegroundColor Yellow
+            $text = Read-Host
+            Write-Host -NoNewline "  Enter key  : " -ForegroundColor Yellow
+            $key = Read-Host
 
             if ([string]::IsNullOrEmpty($key)) {
-
-                Write-Host ""
-                Write-Host "Key cannot be empty."
-                Read-Host "Press Enter to continue"
+                Write-ErrorMsg "Key cannot be empty."
+                Pause-Continue
                 continue
             }
 
-            $textBytes =
-                [System.Text.Encoding]::UTF8.GetBytes($text)
-
-            $keyBytes =
-                [System.Text.Encoding]::UTF8.GetBytes($key)
-
-            $resultBytes =
-                New-Object byte[] $textBytes.Length
+            $textBytes = [System.Text.Encoding]::UTF8.GetBytes($text)
+            $keyBytes = [System.Text.Encoding]::UTF8.GetBytes($key)
+            $resultBytes = New-Object byte[] $textBytes.Length
 
             for ($i = 0; $i -lt $textBytes.Length; $i++) {
-
-                $resultBytes[$i] =
-                    $textBytes[$i] -bxor
-                    $keyBytes[$i % $keyBytes.Length]
+                $resultBytes[$i] = $textBytes[$i] -bxor $keyBytes[$i % $keyBytes.Length]
             }
 
-            $result =
-                [BitConverter]::ToString($resultBytes).Replace("-", "")
-
-            Write-Host ""
-            Write-Host "Result (HEX) : $result"
+            $result = [BitConverter]::ToString($resultBytes).Replace("-", "")
+            Write-Result -Label "Result (HEX)" -Value $result
         }
-
         else {
 
-            $hex = Read-Host "Enter HEX ciphertext"
-            $key = Read-Host "Enter key"
+            Write-Host ""
+            Write-Host -NoNewline "  Enter HEX ciphertext : " -ForegroundColor Yellow
+            $hex = Read-Host
+            Write-Host -NoNewline "  Enter key             : " -ForegroundColor Yellow
+            $key = Read-Host
 
             if ([string]::IsNullOrEmpty($key)) {
-
-                Write-Host ""
-                Write-Host "Key cannot be empty."
-                Read-Host "Press Enter to continue"
+                Write-ErrorMsg "Key cannot be empty."
+                Pause-Continue
                 continue
             }
 
-            if ($hex -notmatch '^[0-9A-Fa-f]+$' -or
-                $hex.Length % 2 -ne 0) {
-
-                Write-Host ""
-                Write-Host "Invalid HEX ciphertext."
-                Read-Host "Press Enter to continue"
+            if ($hex -notmatch '^[0-9A-Fa-f]+$' -or $hex.Length % 2 -ne 0) {
+                Write-ErrorMsg "Invalid HEX ciphertext."
+                Pause-Continue
                 continue
             }
 
-            $keyBytes =
-                [System.Text.Encoding]::UTF8.GetBytes($key)
-
-            $cipherBytes =
-                New-Object byte[] ($hex.Length / 2)
+            $keyBytes = [System.Text.Encoding]::UTF8.GetBytes($key)
+            $cipherBytes = New-Object byte[] ($hex.Length / 2)
 
             for ($i = 0; $i -lt $cipherBytes.Length; $i++) {
-
-                $cipherBytes[$i] =
-                    [Convert]::ToByte(
-                        $hex.Substring($i * 2, 2),
-                        16
-                    )
+                $cipherBytes[$i] = [Convert]::ToByte($hex.Substring($i * 2, 2), 16)
             }
 
-            $resultBytes =
-                New-Object byte[] $cipherBytes.Length
+            $resultBytes = New-Object byte[] $cipherBytes.Length
 
             for ($i = 0; $i -lt $cipherBytes.Length; $i++) {
-
-                $resultBytes[$i] =
-                    $cipherBytes[$i] -bxor
-                    $keyBytes[$i % $keyBytes.Length]
+                $resultBytes[$i] = $cipherBytes[$i] -bxor $keyBytes[$i % $keyBytes.Length]
             }
 
-            $result =
-                [System.Text.Encoding]::UTF8.GetString($resultBytes)
-
-            Write-Host ""
-            Write-Host "Result : $result"
+            try {
+                $result = [System.Text.Encoding]::UTF8.GetString($resultBytes)
+                Write-Result -Label "Result" -Value $result
+            }
+            catch {
+                Write-ErrorMsg "Wrong key or invalid ciphertext (result is not valid text)."
+            }
         }
 
-        Write-Host ""
-
-        Read-Host "Press Enter to continue"
+        Pause-Continue
     }
 }
 
@@ -365,68 +337,35 @@ function AES-Tool {
     while ($true) {
 
         Clear-Host
+        Write-Box -Title "AES" -Color Cyan
+        Write-Menu -Items @("[1] AES-128", "[2] AES-192", "[3] AES-256", "[4] Back")
 
-        Write-Host "========================================"
-        Write-Host "                 AES"
-        Write-Host "========================================"
-        Write-Host ""
-        Write-Host "[1] AES-128"
-        Write-Host "[2] AES-192"
-        Write-Host "[3] AES-256"
-        Write-Host "[4] Back"
-        Write-Host ""
+        $aesChoice = Read-Choice "Select AES"
 
-        $aesChoice = Read-Host "Select AES"
-
-        if ($aesChoice -eq "4") {
-            return
-        }
+        if ($aesChoice -eq "4") { return }
 
         switch ($aesChoice) {
-
-            "1" {
-                $keySize = 128
-            }
-
-            "2" {
-                $keySize = 192
-            }
-
-            "3" {
-                $keySize = 256
-            }
-
+            "1" { $keySize = 128 }
+            "2" { $keySize = 192 }
+            "3" { $keySize = 256 }
             default {
-
-                Write-Host ""
-                Write-Host "Invalid selection."
-                Read-Host "Press Enter to continue"
+                Write-ErrorMsg "Invalid selection."
+                Pause-Continue
                 continue
             }
         }
 
         Clear-Host
+        Write-Box -Title "AES-$keySize" -Color Cyan
+        Write-Menu -Items @("[1] Encrypt", "[2] Decrypt", "[3] Back")
 
-        Write-Host "========================================"
-        Write-Host "              AES-$keySize"
-        Write-Host "========================================"
-        Write-Host ""
-        Write-Host "[1] Encrypt"
-        Write-Host "[2] Decrypt"
-        Write-Host "[3] Back"
-        Write-Host ""
+        $operation = Read-Choice "Select operation"
 
-        $operation = Read-Host "Select operation"
-
-        if ($operation -eq "3") {
-            continue
-        }
+        if ($operation -eq "3") { continue }
 
         if ($operation -ne "1" -and $operation -ne "2") {
-
-            Write-Host ""
-            Write-Host "Invalid selection."
-            Read-Host "Press Enter to continue"
+            Write-ErrorMsg "Invalid selection."
+            Pause-Continue
             continue
         }
 
@@ -437,154 +376,62 @@ function AES-Tool {
         if ($operation -eq "1") {
 
             Write-Host ""
-
-            $plaintext = Read-Host "Enter text"
-
-            $password =
-                Read-Host "Enter key" -AsSecureString
+            Write-Host -NoNewline "  Enter text : " -ForegroundColor Yellow
+            $plaintext = Read-Host
+            $password = Read-Host "  Enter key" -AsSecureString
 
             $passwordPtr = [IntPtr]::Zero
             $derive = $null
             $aes = $null
 
             try {
+                $passwordPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)
+                $passwordText = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPtr)
 
-                $passwordPtr =
-                    [Runtime.InteropServices.Marshal]::SecureStringToBSTR(
-                        $password
-                    )
-
-                $passwordText =
-                    [Runtime.InteropServices.Marshal]::PtrToStringBSTR(
-                        $passwordPtr
-                    )
-
-                # Random salt
                 $salt = New-Object byte[] 16
-
-                $rng =
-                    [Security.Cryptography.RandomNumberGenerator]::Create()
-
+                $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
                 $rng.GetBytes($salt)
-
                 $rng.Dispose()
 
-                # PBKDF2
-                $derive =
-                    New-Object System.Security.Cryptography.Rfc2898DeriveBytes(
-                        $passwordText,
-                        $salt,
-                        100000,
-                        [Security.Cryptography.HashAlgorithmName]::SHA256
-                    )
+                $derive = New-Object System.Security.Cryptography.Rfc2898DeriveBytes(
+                    $passwordText, $salt, 100000, [Security.Cryptography.HashAlgorithmName]::SHA256
+                )
 
-                $aes =
-                    [Security.Cryptography.Aes]::Create()
-
+                $aes = [Security.Cryptography.Aes]::Create()
                 $aes.KeySize = $keySize
                 $aes.BlockSize = 128
-                $aes.Mode =
-                    [Security.Cryptography.CipherMode]::CBC
-                $aes.Padding =
-                    [Security.Cryptography.PaddingMode]::PKCS7
-
-                $aes.Key =
-                    $derive.GetBytes($keySize / 8)
-
-                # Random IV
+                $aes.Mode = [Security.Cryptography.CipherMode]::CBC
+                $aes.Padding = [Security.Cryptography.PaddingMode]::PKCS7
+                $aes.Key = $derive.GetBytes($keySize / 8)
                 $aes.GenerateIV()
 
-                $plainBytes =
-                    [System.Text.Encoding]::UTF8.GetBytes(
-                        $plaintext
-                    )
+                $plainBytes = [System.Text.Encoding]::UTF8.GetBytes($plaintext)
+                $encryptor = $aes.CreateEncryptor()
+                $cipherBytes = $encryptor.TransformFinalBlock($plainBytes, 0, $plainBytes.Length)
 
-                $encryptor =
-                    $aes.CreateEncryptor()
+                # FORMAT: SALT + IV + CIPHERTEXT
+                $combinedLength = $salt.Length + $aes.IV.Length + $cipherBytes.Length
+                $combined = New-Object byte[] $combinedLength
 
-                $cipherBytes =
-                    $encryptor.TransformFinalBlock(
-                        $plainBytes,
-                        0,
-                        $plainBytes.Length
-                    )
+                [Array]::Copy($salt, 0, $combined, 0, $salt.Length)
+                [Array]::Copy($aes.IV, 0, $combined, $salt.Length, $aes.IV.Length)
+                [Array]::Copy($cipherBytes, 0, $combined, $salt.Length + $aes.IV.Length, $cipherBytes.Length)
 
-                # ------------------------------------------------
-                # FORMAT:
-                #
-                # SALT + IV + CIPHERTEXT
-                # ------------------------------------------------
-
-                $combinedLength =
-                    $salt.Length +
-                    $aes.IV.Length +
-                    $cipherBytes.Length
-
-                $combined =
-                    New-Object byte[] $combinedLength
-
-                [Array]::Copy(
-                    $salt,
-                    0,
-                    $combined,
-                    0,
-                    $salt.Length
-                )
-
-                [Array]::Copy(
-                    $aes.IV,
-                    0,
-                    $combined,
-                    $salt.Length,
-                    $aes.IV.Length
-                )
-
-                [Array]::Copy(
-                    $cipherBytes,
-                    0,
-                    $combined,
-                    $salt.Length + $aes.IV.Length,
-                    $cipherBytes.Length
-                )
-
-                # HEX output
-                $result =
-                    [BitConverter]::ToString(
-                        $combined
-                    ).Replace("-", "")
-
-                Write-Host ""
-                Write-Host "Ciphertext (HEX):"
-                Write-Host $result
+                $result = [BitConverter]::ToString($combined).Replace("-", "")
+                Write-Result -Label "Ciphertext (HEX)" -Value $result
             }
-
             catch {
-
-                Write-Host ""
-                Write-Host "Encryption failed."
-                Write-Host $_.Exception.Message
+                Write-ErrorMsg "Encryption failed: $($_.Exception.Message)"
             }
-
             finally {
-
                 if ($passwordPtr -ne [IntPtr]::Zero) {
-
-                    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR(
-                        $passwordPtr
-                    )
+                    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($passwordPtr)
                 }
-
-                if ($derive) {
-                    $derive.Dispose()
-                }
-
-                if ($aes) {
-                    $aes.Dispose()
-                }
+                if ($derive) { $derive.Dispose() }
+                if ($aes) { $aes.Dispose() }
             }
 
-            Write-Host ""
-            Read-Host "Press Enter to continue"
+            Pause-Continue
         }
 
         # ----------------------------------------------------
@@ -594,167 +441,72 @@ function AES-Tool {
         else {
 
             Write-Host ""
-
-            $hex =
-                Read-Host "Enter HEX ciphertext"
-
-            $password =
-                Read-Host "Enter key" -AsSecureString
+            Write-Host -NoNewline "  Enter HEX ciphertext : " -ForegroundColor Yellow
+            $hex = Read-Host
+            $password = Read-Host "  Enter key" -AsSecureString
 
             $passwordPtr = [IntPtr]::Zero
             $derive = $null
             $aes = $null
 
             try {
-
-                if ($hex -notmatch '^[0-9A-Fa-f]+$' -or
-                    $hex.Length % 2 -ne 0) {
-
+                if ($hex -notmatch '^[0-9A-Fa-f]+$' -or $hex.Length % 2 -ne 0) {
                     throw "Invalid HEX ciphertext."
                 }
 
-                $combined =
-                    New-Object byte[] ($hex.Length / 2)
+                $combined = New-Object byte[] ($hex.Length / 2)
 
-                for ($i = 0;
-                     $i -lt $combined.Length;
-                     $i++) {
-
-                    $combined[$i] =
-                        [Convert]::ToByte(
-                            $hex.Substring($i * 2, 2),
-                            16
-                        )
+                for ($i = 0; $i -lt $combined.Length; $i++) {
+                    $combined[$i] = [Convert]::ToByte($hex.Substring($i * 2, 2), 16)
                 }
 
-                # Salt = 16 bytes
-                # IV   = 16 bytes
                 if ($combined.Length -lt 33) {
-
                     throw "Invalid ciphertext."
                 }
 
-                # Password
-                $passwordPtr =
-                    [Runtime.InteropServices.Marshal]::SecureStringToBSTR(
-                        $password
-                    )
+                $passwordPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)
+                $passwordText = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPtr)
 
-                $passwordText =
-                    [Runtime.InteropServices.Marshal]::PtrToStringBSTR(
-                        $passwordPtr
-                    )
+                $salt = New-Object byte[] 16
+                [Array]::Copy($combined, 0, $salt, 0, 16)
 
-                # Extract SALT
-                $salt =
-                    New-Object byte[] 16
+                $iv = New-Object byte[] 16
+                [Array]::Copy($combined, 16, $iv, 0, 16)
 
-                [Array]::Copy(
-                    $combined,
-                    0,
-                    $salt,
-                    0,
-                    16
+                $cipherLength = $combined.Length - 32
+                $cipherBytes = New-Object byte[] $cipherLength
+                [Array]::Copy($combined, 32, $cipherBytes, 0, $cipherLength)
+
+                $derive = New-Object System.Security.Cryptography.Rfc2898DeriveBytes(
+                    $passwordText, $salt, 100000, [Security.Cryptography.HashAlgorithmName]::SHA256
                 )
 
-                # Extract IV
-                $iv =
-                    New-Object byte[] 16
-
-                [Array]::Copy(
-                    $combined,
-                    16,
-                    $iv,
-                    0,
-                    16
-                )
-
-                # Extract ciphertext
-                $cipherLength =
-                    $combined.Length - 32
-
-                $cipherBytes =
-                    New-Object byte[] $cipherLength
-
-                [Array]::Copy(
-                    $combined,
-                    32,
-                    $cipherBytes,
-                    0,
-                    $cipherLength
-                )
-
-                # PBKDF2
-                $derive =
-                    New-Object System.Security.Cryptography.Rfc2898DeriveBytes(
-                        $passwordText,
-                        $salt,
-                        100000,
-                        [Security.Cryptography.HashAlgorithmName]::SHA256
-                    )
-
-                $aes =
-                    [Security.Cryptography.Aes]::Create()
-
+                $aes = [Security.Cryptography.Aes]::Create()
                 $aes.KeySize = $keySize
                 $aes.BlockSize = 128
-                $aes.Mode =
-                    [Security.Cryptography.CipherMode]::CBC
-                $aes.Padding =
-                    [Security.Cryptography.PaddingMode]::PKCS7
-
-                $aes.Key =
-                    $derive.GetBytes($keySize / 8)
-
+                $aes.Mode = [Security.Cryptography.CipherMode]::CBC
+                $aes.Padding = [Security.Cryptography.PaddingMode]::PKCS7
+                $aes.Key = $derive.GetBytes($keySize / 8)
                 $aes.IV = $iv
 
-                $decryptor =
-                    $aes.CreateDecryptor()
+                $decryptor = $aes.CreateDecryptor()
+                $plainBytes = $decryptor.TransformFinalBlock($cipherBytes, 0, $cipherBytes.Length)
+                $result = [System.Text.Encoding]::UTF8.GetString($plainBytes)
 
-                $plainBytes =
-                    $decryptor.TransformFinalBlock(
-                        $cipherBytes,
-                        0,
-                        $cipherBytes.Length
-                    )
-
-                $result =
-                    [System.Text.Encoding]::UTF8.GetString(
-                        $plainBytes
-                    )
-
-                Write-Host ""
-                Write-Host "Plaintext:"
-                Write-Host $result
+                Write-Result -Label "Plaintext" -Value $result
             }
-
             catch {
-
-                Write-Host ""
-                Write-Host "Decryption failed."
-                Write-Host "Wrong key or invalid ciphertext."
+                Write-ErrorMsg "Decryption failed. Wrong key or invalid ciphertext."
             }
-
             finally {
-
                 if ($passwordPtr -ne [IntPtr]::Zero) {
-
-                    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR(
-                        $passwordPtr
-                    )
+                    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($passwordPtr)
                 }
-
-                if ($derive) {
-                    $derive.Dispose()
-                }
-
-                if ($aes) {
-                    $aes.Dispose()
-                }
+                if ($derive) { $derive.Dispose() }
+                if ($aes) { $aes.Dispose() }
             }
 
-            Write-Host ""
-            Read-Host "Press Enter to continue"
+            Pause-Continue
         }
     }
 }
@@ -766,40 +518,28 @@ function AES-Tool {
 
 function RSA-Tool {
 
-    $keyDirectory =
-        Join-Path $PSScriptRoot "keys"
+    $keyDirectory = Join-Path $PSScriptRoot "keys"
 
     if (-not (Test-Path $keyDirectory)) {
-
-        New-Item `
-            -ItemType Directory `
-            -Path $keyDirectory `
-            -Force |
-            Out-Null
+        New-Item -ItemType Directory -Path $keyDirectory -Force | Out-Null
     }
 
-    $privateKeyFile =
-        Join-Path $keyDirectory "private_key.xml"
-
-    $publicKeyFile =
-        Join-Path $keyDirectory "public_key.xml"
+    $privateKeyFile = Join-Path $keyDirectory "private_key.xml"
+    $publicKeyFile = Join-Path $keyDirectory "public_key.xml"
 
     while ($true) {
 
         Clear-Host
+        Write-Box -Title "RSA" -Color Cyan
+        Write-Menu -Items @(
+            "[1] Generate Key Pair",
+            "[2] Encrypt",
+            "[3] Decrypt",
+            "[4] Key Information",
+            "[5] Back"
+        )
 
-        Write-Host "========================================"
-        Write-Host "                 RSA"
-        Write-Host "========================================"
-        Write-Host ""
-        Write-Host "[1] Generate Key Pair"
-        Write-Host "[2] Encrypt"
-        Write-Host "[3] Decrypt"
-        Write-Host "[4] Key Information"
-        Write-Host "[5] Back"
-        Write-Host ""
-
-        $choice = Read-Host "Select operation"
+        $choice = Read-Choice "Select operation"
 
         # ----------------------------------------------------
         # GENERATE KEY
@@ -808,91 +548,45 @@ function RSA-Tool {
         if ($choice -eq "1") {
 
             Clear-Host
+            Write-Box -Title "RSA KEY GENERATOR" -Color Cyan
+            Write-Menu -Items @("[1] RSA-2048", "[2] RSA-3072", "[3] RSA-4096", "[4] Back")
 
-            Write-Host "========================================"
-            Write-Host "          RSA KEY GENERATOR"
-            Write-Host "========================================"
-            Write-Host ""
-            Write-Host "[1] RSA-2048"
-            Write-Host "[2] RSA-3072"
-            Write-Host "[3] RSA-4096"
-            Write-Host "[4] Back"
-            Write-Host ""
-
-            $sizeChoice =
-                Read-Host "Select key size"
+            $sizeChoice = Read-Choice "Select key size"
 
             switch ($sizeChoice) {
-
-                "1" {
-                    $rsaSize = 2048
-                }
-
-                "2" {
-                    $rsaSize = 3072
-                }
-
-                "3" {
-                    $rsaSize = 4096
-                }
-
-                "4" {
-                    continue
-                }
-
+                "1" { $rsaSize = 2048 }
+                "2" { $rsaSize = 3072 }
+                "3" { $rsaSize = 4096 }
+                "4" { continue }
                 default {
-
-                    Write-Host ""
-                    Write-Host "Invalid selection."
-                    Read-Host "Press Enter to continue"
+                    Write-ErrorMsg "Invalid selection."
+                    Pause-Continue
                     continue
                 }
             }
 
             try {
+                Write-Info "Generating RSA-$rsaSize key pair..."
 
-                Write-Host ""
-                Write-Host "Generating RSA-$rsaSize key pair..."
-                Write-Host ""
+                $rsa = [Security.Cryptography.RSA]::Create($rsaSize)
+                $privateXml = $rsa.ToXmlString($true)
+                $publicXml = $rsa.ToXmlString($false)
 
-                $rsa =
-                    [Security.Cryptography.RSA]::Create(
-                        $rsaSize
-                    )
-
-                $privateXml =
-                    $rsa.ToXmlString($true)
-
-                $publicXml =
-                    $rsa.ToXmlString($false)
-
-                [System.IO.File]::WriteAllText(
-                    $privateKeyFile,
-                    $privateXml
-                )
-
-                [System.IO.File]::WriteAllText(
-                    $publicKeyFile,
-                    $publicXml
-                )
+                [System.IO.File]::WriteAllText($privateKeyFile, $privateXml)
+                [System.IO.File]::WriteAllText($publicKeyFile, $publicXml)
 
                 $rsa.Dispose()
 
-                Write-Host "Key pair generated successfully."
                 Write-Host ""
-                Write-Host "Public Key : $publicKeyFile"
-                Write-Host "Private Key: $privateKeyFile"
+                Write-Host "  [OK] Key pair generated successfully." -ForegroundColor Green
+                Write-Host "    Public Key : $publicKeyFile" -ForegroundColor White
+                Write-Host "    Private Key: $privateKeyFile" -ForegroundColor White
             }
-
             catch {
-
-                Write-Host ""
-                Write-Host "Key generation failed."
-                Write-Host $_.Exception.Message
+                Write-ErrorMsg "Key generation failed: $($_.Exception.Message)"
             }
 
-            Write-Host ""
-            Read-Host "Press Enter to continue"
+            Pause-Continue
         }
 
         # ----------------------------------------------------
@@ -902,68 +596,36 @@ function RSA-Tool {
         elseif ($choice -eq "2") {
 
             if (-not (Test-Path $publicKeyFile)) {
-
-                Write-Host ""
-                Write-Host "Public key not found."
-                Write-Host "Generate a key pair first."
-                Read-Host "Press Enter to continue"
+                Write-ErrorMsg "Public key not found. Generate a key pair first."
+                Pause-Continue
                 continue
             }
 
             Clear-Host
+            Write-Box -Title "RSA ENCRYPT" -Color Cyan
 
-            Write-Host "========================================"
-            Write-Host "             RSA ENCRYPT"
-            Write-Host "========================================"
             Write-Host ""
-
-            $plaintext =
-                Read-Host "Enter text"
+            Write-Host -NoNewline "  Enter text : " -ForegroundColor Yellow
+            $plaintext = Read-Host
 
             try {
-
-                $publicXml =
-                    [System.IO.File]::ReadAllText(
-                        $publicKeyFile
-                    )
-
-                $rsa =
-                    [Security.Cryptography.RSA]::Create()
-
+                $publicXml = [System.IO.File]::ReadAllText($publicKeyFile)
+                $rsa = [Security.Cryptography.RSA]::Create()
                 $rsa.FromXmlString($publicXml)
 
-                $plainBytes =
-                    [System.Text.Encoding]::UTF8.GetBytes(
-                        $plaintext
-                    )
+                $plainBytes = [System.Text.Encoding]::UTF8.GetBytes($plaintext)
+                $cipherBytes = $rsa.Encrypt($plainBytes, [Security.Cryptography.RSAEncryptionPadding]::OaepSHA256)
 
-                $cipherBytes =
-                    $rsa.Encrypt(
-                        $plainBytes,
-                        [Security.Cryptography.RSAEncryptionPadding]::OaepSHA256
-                    )
-
-                $result =
-                    [BitConverter]::ToString(
-                        $cipherBytes
-                    ).Replace("-", "")
-
-                Write-Host ""
-                Write-Host "Ciphertext (HEX):"
-                Write-Host $result
+                $result = [BitConverter]::ToString($cipherBytes).Replace("-", "")
+                Write-Result -Label "Ciphertext (HEX)" -Value $result
 
                 $rsa.Dispose()
             }
-
             catch {
-
-                Write-Host ""
-                Write-Host "Encryption failed."
-                Write-Host $_.Exception.Message
+                Write-ErrorMsg "Encryption failed: $($_.Exception.Message)"
             }
 
-            Write-Host ""
-            Read-Host "Press Enter to continue"
+            Pause-Continue
         }
 
         # ----------------------------------------------------
@@ -973,83 +635,45 @@ function RSA-Tool {
         elseif ($choice -eq "3") {
 
             if (-not (Test-Path $privateKeyFile)) {
-
-                Write-Host ""
-                Write-Host "Private key not found."
-                Write-Host "Generate a key pair first."
-                Read-Host "Press Enter to continue"
+                Write-ErrorMsg "Private key not found. Generate a key pair first."
+                Pause-Continue
                 continue
             }
 
             Clear-Host
+            Write-Box -Title "RSA DECRYPT" -Color Cyan
 
-            Write-Host "========================================"
-            Write-Host "             RSA DECRYPT"
-            Write-Host "========================================"
             Write-Host ""
-
-            $hex =
-                Read-Host "Enter HEX ciphertext"
+            Write-Host -NoNewline "  Enter HEX ciphertext : " -ForegroundColor Yellow
+            $hex = Read-Host
 
             try {
-
-                if ($hex -notmatch '^[0-9A-Fa-f]+$' -or
-                    $hex.Length % 2 -ne 0) {
-
+                if ($hex -notmatch '^[0-9A-Fa-f]+$' -or $hex.Length % 2 -ne 0) {
                     throw "Invalid HEX ciphertext."
                 }
 
-                $cipherBytes =
-                    New-Object byte[] ($hex.Length / 2)
+                $cipherBytes = New-Object byte[] ($hex.Length / 2)
 
-                for ($i = 0;
-                     $i -lt $cipherBytes.Length;
-                     $i++) {
-
-                    $cipherBytes[$i] =
-                        [Convert]::ToByte(
-                            $hex.Substring($i * 2, 2),
-                            16
-                        )
+                for ($i = 0; $i -lt $cipherBytes.Length; $i++) {
+                    $cipherBytes[$i] = [Convert]::ToByte($hex.Substring($i * 2, 2), 16)
                 }
 
-                $privateXml =
-                    [System.IO.File]::ReadAllText(
-                        $privateKeyFile
-                    )
-
-                $rsa =
-                    [Security.Cryptography.RSA]::Create()
-
+                $privateXml = [System.IO.File]::ReadAllText($privateKeyFile)
+                $rsa = [Security.Cryptography.RSA]::Create()
                 $rsa.FromXmlString($privateXml)
 
-                $plainBytes =
-                    $rsa.Decrypt(
-                        $cipherBytes,
-                        [Security.Cryptography.RSAEncryptionPadding]::OaepSHA256
-                    )
+                $plainBytes = $rsa.Decrypt($cipherBytes, [Security.Cryptography.RSAEncryptionPadding]::OaepSHA256)
+                $result = [System.Text.Encoding]::UTF8.GetString($plainBytes)
 
-                $result =
-                    [System.Text.Encoding]::UTF8.GetString(
-                        $plainBytes
-                    )
-
-                Write-Host ""
-                Write-Host "Plaintext:"
-                Write-Host $result
+                Write-Result -Label "Plaintext" -Value $result
 
                 $rsa.Dispose()
             }
-
             catch {
-
-                Write-Host ""
-                Write-Host "Decryption failed."
-                Write-Host "Wrong private key or invalid ciphertext."
+                Write-ErrorMsg "Decryption failed. Wrong private key or invalid ciphertext."
             }
 
-            Write-Host ""
-            Read-Host "Press Enter to continue"
+            Pause-Continue
         }
 
         # ----------------------------------------------------
@@ -1059,37 +683,32 @@ function RSA-Tool {
         elseif ($choice -eq "4") {
 
             Clear-Host
-
-            Write-Host "========================================"
-            Write-Host "           RSA KEY INFORMATION"
-            Write-Host "========================================"
+            Write-Box -Title "RSA KEY INFORMATION" -Color Cyan
             Write-Host ""
 
             if (Test-Path $publicKeyFile) {
-
-                Write-Host "Public Key : FOUND"
-                Write-Host "Location   : $publicKeyFile"
+                Write-Host "  Public Key : " -NoNewline -ForegroundColor White
+                Write-Host "FOUND" -ForegroundColor Green
+                Write-Host "  Location   : $publicKeyFile" -ForegroundColor DarkGray
             }
             else {
-
-                Write-Host "Public Key : NOT FOUND"
+                Write-Host "  Public Key : " -NoNewline -ForegroundColor White
+                Write-Host "NOT FOUND" -ForegroundColor Red
             }
 
             Write-Host ""
 
             if (Test-Path $privateKeyFile) {
-
-                Write-Host "Private Key: FOUND"
-                Write-Host "Location   : $privateKeyFile"
+                Write-Host "  Private Key: " -NoNewline -ForegroundColor White
+                Write-Host "FOUND" -ForegroundColor Green
+                Write-Host "  Location   : $privateKeyFile" -ForegroundColor DarkGray
             }
             else {
-
-                Write-Host "Private Key: NOT FOUND"
+                Write-Host "  Private Key: " -NoNewline -ForegroundColor White
+                Write-Host "NOT FOUND" -ForegroundColor Red
             }
 
-            Write-Host ""
-
-            Read-Host "Press Enter to continue"
+            Pause-Continue
         }
 
         # ----------------------------------------------------
@@ -1097,14 +716,11 @@ function RSA-Tool {
         # ----------------------------------------------------
 
         elseif ($choice -eq "5") {
-
             return
         }
 
         else {
-
-            Write-Host ""
-            Write-Host "Invalid selection."
+            Write-ErrorMsg "Invalid selection."
             Start-Sleep -Seconds 1
         }
     }
@@ -1117,66 +733,48 @@ function RSA-Tool {
 
 while ($true) {
 
-Clear-Host
-Write-Host "========================================"
-Write-Host @'
- ____  _   _ _____ ____      _    
-|  _ \| | | |_   _|  _ \    / \   
-| |_) | | | | | | | |_) |  / _ \  
-|  __/| |_| | | | |  _ <  / ___ \ 
-|_|    \___/  |_| |_| \_\/_/   \_\
+    Clear-Host
 
-          CRYPTOGRAPHY TOOL
-'@
-Write-Host "========================================"
-Write-Host "Version : 1.1.0"
-Write-Host "Release : Installation Improvement"
-Write-Host "Author  : PUTRA"
-Write-Host "========================================"
-Write-Host "MAHASISWA BUKAN MAHA TAHU"
-Write-Host "========================================"
-Write-Host ""
-Write-Host "[1] Caesar Cipher"
-Write-Host "[2] Vigenere Cipher"
-Write-Host "[3] XOR Cipher"
-Write-Host "[4] AES"
-Write-Host "[5] RSA"
-Write-Host "[6] Exit"
-Write-Host ""
-    $choice =
-        Read-Host "Select algorithm"
+    Write-Host ""
+    Write-Host "   ____  _   _ _____ ____      _    " -ForegroundColor Magenta
+    Write-Host "  |  _ \| | | |_   _|  _ \    / \   " -ForegroundColor Magenta
+    Write-Host "  | |_) | | | | | | | |_) |  / _ \  " -ForegroundColor Magenta
+    Write-Host "  |  __/| |_| | | | |  _ <  / ___ \ " -ForegroundColor Magenta
+    Write-Host "  |_|    \___/  |_| |_| \_\/_/   \_\" -ForegroundColor Magenta
+    Write-Host ""
+    Write-Box -Title "CRYPTOGRAPHY TOOL" -Color Cyan -Width 44
+    Write-Host "   Version : 2.0.0" -ForegroundColor DarkGray
+    Write-Host "   Release : Bug Fix + UI Refresh" -ForegroundColor DarkGray
+    Write-Host "   Author  : PUTRA" -ForegroundColor DarkGray
+    Write-Host "   ----------------------------------" -ForegroundColor DarkGray
+    Write-Host "   MAHASISWA BUKAN MAHA TAHU" -ForegroundColor DarkGray
+
+    Write-Menu -Items @(
+        "[1] Caesar Cipher",
+        "[2] Vigenere Cipher",
+        "[3] XOR Cipher",
+        "[4] AES",
+        "[5] RSA",
+        "[6] Exit"
+    )
+
+    $choice = Read-Choice "Select algorithm"
 
     switch ($choice) {
-
-        "1" {
-            Caesar-Cipher
-        }
-
-        "2" {
-            Vigenere-Cipher
-        }
-
-        "3" {
-            XOR-Cipher
-        }
-
-        "4" {
-            AES-Tool
-        }
-
-        "5" {
-            RSA-Tool
-        }
-
+        "1" { Caesar-Cipher }
+        "2" { Vigenere-Cipher }
+        "3" { XOR-Cipher }
+        "4" { AES-Tool }
+        "5" { RSA-Tool }
         "6" {
             Clear-Host
+            Write-Host ""
+            Write-Host "  Terima kasih sudah menggunakan Cryptography Tool!" -ForegroundColor Cyan
+            Write-Host ""
             exit
         }
-
         default {
-
-            Write-Host ""
-            Write-Host "Invalid selection."
+            Write-ErrorMsg "Invalid selection."
             Start-Sleep -Seconds 1
         }
     }
